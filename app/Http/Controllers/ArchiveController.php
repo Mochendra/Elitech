@@ -9,21 +9,10 @@ use App\Exports\PostsExport;
 use PDF;
 use ZipArchive;
 use Illuminate\Support\Facades\Storage;
+use Box\Spout\Writer\Common\Creator\WriterEntityFactory;
 
 class ArchiveController extends Controller
 {
-    // public function index(Request $request)
-    // {
-    //     $query = Post::query();
-
-    //     if ($request->filled('start_date') && $request->filled('end_date')) {
-    //         $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
-    //     }
-
-    //     $posts = $query->paginate(10);
-
-    //     return view('archives.archives', compact('posts'));
-    // }
 
     public function show($id)
     {
@@ -34,17 +23,21 @@ class ArchiveController extends Controller
     }
 
     public function archives(Request $request)
-    {
-        $query = Post::query();
+{
+    $query = Post::query();
 
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
-        }
+    // Debug untuk mengecek input tanggal
+    dd($request->start_date, $request->end_date);
 
-        $posts = $query->paginate(10);
-
-        return view('archives.index', compact('posts'));
+    if ($request->has('start_date') && $request->has('end_date')) {
+        $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
     }
+
+    $posts = $query->paginate(10);
+
+    return view('archives.index', compact('posts'));
+}
+
 
     public function downloadAll(Request $request)
     {
@@ -98,58 +91,51 @@ class ArchiveController extends Controller
     }
 
     public function exportToExcel()
-    {
-        $data = Post::all(); // Replace with your model
-    
-        $filename = "posts_" . date("Y-m-d_H-i-s") . ".xlsx";
-    
-        header("Content-Disposition: attachment; filename=\"$filename\"");
-        header("Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
-    
-        // Create a new PhpSpreadsheet object
-        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
-    
-        // Set the worksheet
-        $worksheet = $spreadsheet->getActiveSheet();
-    
-        // Set the header row
-        $worksheet->setCellValue('A1', 'Media Type');
-        $worksheet->setCellValue('B1', 'Date Posted');
-        $worksheet->setCellValue('C1', 'Caption');
-    
-        // Check if $data is empty
-        if ($data->isEmpty()) {
-            echo "Data is empty!";
-            exit;
-        }
-    
-        // Loop through the data
-        $rowIndex = 2; // Start from row 2, since row 1 is the header
+{
+    $data = Post::all(); // Ambil semua data dari model Post
+
+    // Buat nama file untuk file XLSX
+    $filename = "posts_" . date("Y-m-d_H-i-s") . ".xlsx";
+
+    // Membuat writer untuk XLSX
+    $writer = WriterEntityFactory::createXLSXWriter();
+    $writer->openToBrowser($filename); // Output langsung ke browser untuk di-download
+
+    // Membuat header untuk file Excel
+    $headerRow = WriterEntityFactory::createRowFromArray(['Media Type', 'Date Posted', 'Caption']);
+    $writer->addRow($headerRow); // Menambahkan header ke file XLSX
+
+    // Periksa apakah data kosong
+    if ($data->isEmpty()) {
+        $emptyRow = WriterEntityFactory::createRowFromArray(['No data available']);
+        $writer->addRow($emptyRow); // Jika data kosong, tambahkan pesan kosong
+    } else {
+        // Looping melalui data dan tambahkan ke Excel
         foreach ($data as $row) {
-            $mediaType = $row->media_type; // Get media type directly from the database
-            $mediaTitle = ''; // Initialize media title
-    
-            // Determine the media title based on media type
+            $mediaType = $row->media_type;
+            $mediaTitle = ''; // Inisialisasi judul media
+
+            // Tentukan judul media berdasarkan tipe media
             if ($mediaType === 'image' && !empty($row->photo)) {
-                $mediaTitle = $row->photo_title; // Assuming the title is stored in $row->photo_title
+                $mediaTitle = $row->photo_title;
             } elseif ($mediaType === 'video' && !empty($row->video)) {
-                $mediaTitle = $row->video_title; // Assuming the title is stored in $row->video_title
+                $mediaTitle = $row->video_title;
             } else {
-                $mediaTitle = 'No media available'; // Fallback if no media found
+                $mediaTitle = 'No media available'; // Default jika tidak ada media
             }
-    
-            // Write the data row with the media type, date, and content as caption
-            $worksheet->setCellValue('A' . $rowIndex, $mediaType);
-            $worksheet->setCellValue('B' . $rowIndex, date('Y-m-d', strtotime($row->created_at)));
-            $worksheet->setCellValue('C' . $rowIndex, $row->content); // Use content from posts table as caption
-    
-            $rowIndex++; // Increment the row index
+
+            // Buat baris baru dengan tipe media, tanggal posting, dan caption
+            $dataRow = WriterEntityFactory::createRowFromArray([
+                $mediaType,
+                date('Y-m-d', strtotime($row->created_at)),
+                $row->content // Gunakan konten dari tabel post sebagai caption
+            ]);
+
+            $writer->addRow($dataRow); // Tambahkan baris ke file Excel
         }
-    
-        // Write the XLSX file to the output stream
-        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
-        $writer->save('php://output');
-    
-        exit; // Ensure the script stops after outputting the XLSX
     }
+
+    // Tutup writer setelah selesai
+    $writer->close();
+}
 }
