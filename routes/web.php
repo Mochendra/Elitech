@@ -69,6 +69,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/archives/{id}', [ArchiveController::class, 'show'])->name('archives.archives')->where('id', '[0-9]+');
     Route::get('/archives', [ArchiveController::class, 'archives'])->name('archives.archives');
     Route::post('/archives/download-all', [ArchiveController::class, 'downloadAll'])->name('archives.downloadAll');
+    Route::get('/export', 'YourController@exportToExcel');
 // Route::get('/export-excel', [YourController::class, 'exportToExcel']);
 // Route::get('/export-archive', [ExportController::class, 'exportArchiveToExcel']);
 });
