@@ -39,41 +39,64 @@ class ArchiveController extends Controller
 }
 
 
-    public function downloadAll(Request $request)
-    {
-        $format = $request->input('format', 'xlsx');
-        $query = Post::query();
+public function downloadAll(Request $request)
+{
+    $format = $request->input('format', 'xlsx');
+    $query = Post::query();
 
-        if ($request->has('start_date') && $request->has('end_date')) {
-            $query->whereBetween('created_at', [$request->start_date, $request->end_date]);
-        }
-
-        $posts = $query->get();
-
-        if ($format === 'xlsx') {
-            // Remove this line
-            // return Excel::download(new PostsExport($posts), 'all_posts.xlsx');
-            return $this->exportToExcel();
-        } elseif ($format === 'pdf') {
-            $pdf = PDF::loadView('exports.posts_pdf', compact('posts'));
-            return $pdf->download('all_posts.pdf');
-        } elseif ($format === 'zip') {
-            $zip = new ZipArchive;
-            $fileName = 'all_posts.zip';
-
-            if ($zip->open(public_path($fileName), ZipArchive::CREATE) === TRUE) {
-                foreach ($posts as $post) {
-                    $pdf = PDF::loadView('exports.post_pdf', ['post' => $post]);
-                    $zip->addFromString('post_' . $post->id . '.pdf', $pdf->output());
-                }
-                $zip->close();
-            }
-
-            return response()->download(public_path($fileName))->deleteFileAfterSend(true);
-        }
-
-        return back()->with('error', 'Invalid format selected.');
+    // Check if both start_date and end_date are provided
+    if ($request->has('start_date') && $request->has('end_date')) {
+        // Use whereDate to filter posts based on the start and end date
+        $query->whereDate('created_at', '>=', $request->start_date)
+              ->whereDate('created_at', '<=', $request->end_date);
     }
+
+    $posts = $query->get(); // Fetch posts based on the date range
+
+    // Handle the export based on the selected format
+    if ($format === 'xlsx') {
+        return $this->exportToExcel($posts); // Pass the filtered posts to the export function
+    } elseif ($format === 'pdf') {
+        $pdf = PDF::loadView('exports.posts_pdf', compact('posts'));
+        return $pdf->download('all_posts.pdf');
+    } elseif ($format === 'zip') {
+        return $this->exportToZip($posts); // New method to handle ZIP export
+    }
+
+    return back()->with('error', 'Invalid format selected.');
+}
+
+// Modify the exportToExcel method to accept filtered posts
+public function exportToExcel($posts)
+{
+    $filename = "posts_" . date("Y-m-d_H-i-s") . ".xlsx";
+    $writer = WriterEntityFactory::createXLSXWriter();
+    $writer->openToBrowser($filename);
+
+    $headerRow = WriterEntityFactory::createRowFromArray(['Media Type', 'Date Posted', 'Caption']);
+    $writer->addRow($headerRow);
+
+    if ($posts->isEmpty()) {
+        $emptyRow = WriterEntityFactory::createRowFromArray(['No data available']);
+        $writer->addRow($emptyRow);
+    } else {
+        foreach ($posts as $row) {
+            $mediaType = $row->media_type;
+            $mediaTitle = $mediaType === 'image' && !empty($row->photo) ? $row->photo_title : 
+                          ($mediaType === 'video' && !empty($row->video) ? $row->video_title : 'No media available');
+
+            $dataRow = WriterEntityFactory::createRowFromArray([
+                $mediaType,
+                date('Y-m-d', strtotime($row->created_at)),
+                $row->content
+            ]);
+
+            $writer->addRow($dataRow);
+        }
+    }
+
+    $writer->close();
+}
 
     public function index(Request $request)
     {
@@ -90,52 +113,4 @@ class ArchiveController extends Controller
         return view('archives.archives', compact('posts'));
     }
 
-    public function exportToExcel()
-{
-    $data = Post::all(); // Ambil semua data dari model Post
-
-    // Buat nama file untuk file XLSX
-    $filename = "posts_" . date("Y-m-d_H-i-s") . ".xlsx";
-
-    // Membuat writer untuk XLSX
-    $writer = WriterEntityFactory::createXLSXWriter();
-    $writer->openToBrowser($filename); // Output langsung ke browser untuk di-download
-
-    // Membuat header untuk file Excel
-    $headerRow = WriterEntityFactory::createRowFromArray(['Media Type', 'Date Posted', 'Caption']);
-    $writer->addRow($headerRow); // Menambahkan header ke file XLSX
-
-    // Periksa apakah data kosong
-    if ($data->isEmpty()) {
-        $emptyRow = WriterEntityFactory::createRowFromArray(['No data available']);
-        $writer->addRow($emptyRow); // Jika data kosong, tambahkan pesan kosong
-    } else {
-        // Looping melalui data dan tambahkan ke Excel
-        foreach ($data as $row) {
-            $mediaType = $row->media_type;
-            $mediaTitle = ''; // Inisialisasi judul media
-
-            // Tentukan judul media berdasarkan tipe media
-            if ($mediaType === 'image' && !empty($row->photo)) {
-                $mediaTitle = $row->photo_title;
-            } elseif ($mediaType === 'video' && !empty($row->video)) {
-                $mediaTitle = $row->video_title;
-            } else {
-                $mediaTitle = 'No media available'; // Default jika tidak ada media
-            }
-
-            // Buat baris baru dengan tipe media, tanggal posting, dan caption
-            $dataRow = WriterEntityFactory::createRowFromArray([
-                $mediaType,
-                date('Y-m-d', strtotime($row->created_at)),
-                $row->content // Gunakan konten dari tabel post sebagai caption
-            ]);
-
-            $writer->addRow($dataRow); // Tambahkan baris ke file Excel
-        }
-    }
-
-    // Tutup writer setelah selesai
-    $writer->close();
-}
 }

@@ -6,7 +6,8 @@
     <div class="container">
         <h1>Archives</h1>
 
-        <form action="{{ route('archives.archives') }}" method="GET" class="mb-4">
+        <form action="{{ route('archives.downloadAll') }}" method="POST" class="mb-4">
+            @csrf
             <div class="row">
                 <div class="col-md-4">
                     <input type="date" name="start_date" class="form-control" value="{{ request('start_date') }}">
@@ -15,23 +16,11 @@
                     <input type="date" name="end_date" class="form-control" value="{{ request('end_date') }}">
                 </div>
                 <div class="col-md-4">
-                    <button type="submit" class="btn btn-primary">Filter</button>
-                </div>
-            </div>
-        </form>
-        
-
-        <form action="{{ route('archives.downloadAll') }}" method="POST" class="mb-4">
-            @csrf
-            <div class="row">
-                <div class="col-md-4">
                     <select name="format" class="form-control">
                         <option value="xlsx">XLSX</option>
                         <option value="pdf">PDF</option>
                     </select>
-                </div>
-                <div class="col-md-4">
-                    <button type="submit" class="btn btn-success">Download All</button>
+                    <button type="submit" class="btn btn-success" style="margin-top:10%;">Download All</button>
                 </div>
             </div>
         </form>
