@@ -14,31 +14,26 @@
         }
 
         .sidebar {
-            min-width: 250px;
-            background: #f8f9fa;
-            height: 100%;
-        }
+        min-width: 250px;
+        background: #f8f9fa;
+        height: 100%;
+    }
 
-        .main-content {
-            flex: 1;
-            padding: 20px;
-            overflow-y: auto;
-        }
+    .main-content {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+    }
+</style>
     </style>
 </head>
 
 <body>
     <div class="sidebar">
         <header class="bg-light p-3">
-            <h3 class="text-center">Instagram Clone</h3>
+            <h3 class="text-center">Instagram Bro</h3>
         </header>
         <ul class="nav flex-column">
-            {{-- <li class="nav-item">
-                <a class="nav-link" href="{{ route('login') }}">Login</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="{{ route('register') }}">Register</a>
-            </li> --}}
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('feed.index') }}">Feed</a>
             </li>
@@ -55,13 +50,12 @@
                 <a class="nav-link" href="{{ route('profile.show', ['username' => Auth::user()->id]) }}">Profil Saya</a>
             </li>
             <!-- Form untuk logout -->
-            <form action="{{ route('logout') }}" method="POST" style="display: inline;">
-                @csrf <!-- Tambahkan token CSRF -->
-                <button type="submit" class="btn btn-danger">Logout</button>
-            </form>
-            {{-- <li class="nav-item">
-                <a class="nav-link" href="{{ route('feed') }}">Feed</a>
-            </li>             --}}
+            <div class="logout-container" style="position: absolute; bottom: 20px; left: 20px;">
+                <form action="{{ route('logout') }}" method="POST">
+                    @csrf <!-- Tambahkan token CSRF -->
+                    <button type="submit" class="btn btn-danger">Logout</button>
+                </form>
+            </div>
         </ul>
     </div>
 

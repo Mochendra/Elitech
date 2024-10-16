@@ -3,11 +3,11 @@
 @section('title', 'Profile')
 
 @section('content')
-    <div class="row">
+    <div class="row" style="width:100%">
 
         <!-- Main Profile Content -->
         <div class="col-md-9">
-            <div class="card">
+            <div>
                 <div class="card-body">
                     @if (auth()->check())
                         <h5 class="card-title text-center">Profil Pengguna</h5>
