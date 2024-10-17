@@ -10,10 +10,10 @@ class CreatePostsTable extends Migration
     {
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); // Foreign key ke tabel users
-            $table->text('caption'); // Konten postingan
-            $table->string('media_type')->nullable(); // Jenis media (image/video)
-            $table->string('media_path')->nullable(); // Path ke media file
+            $table->foreignId('user_id')->constrained('users')->onDelete('cascade'); 
+            $table->text('caption'); 
+            $table->string('media_type')->nullable(); 
+            $table->string('media_path')->nullable(); 
             $table->timestamps();
         });
     }

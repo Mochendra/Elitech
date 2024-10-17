@@ -14,10 +14,9 @@ return new class extends Migration
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
-            $table->integer('feeds_per_row')->default(3); // Jumlah post per baris dengan default 3
+            $table->integer('feeds_per_row')->default(3); 
             $table->timestamps();
 
-            // Relasi dengan tabel users
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }

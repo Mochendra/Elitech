@@ -13,8 +13,8 @@ class CreateUsersTable extends Migration
             $table->string('name');
             $table->string('email')->unique();
             $table->string('password');
-            $table->string('profile_picture')->nullable(); // Path foto profil
-            $table->text('bio')->nullable(); // Bio pengguna
+            $table->string('profile_picture')->nullable(); 
+            $table->text('bio')->nullable(); 
             $table->timestamps();
         });
     }

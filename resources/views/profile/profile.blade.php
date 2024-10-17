@@ -5,8 +5,8 @@
 @section('content')
     <div class="row" style="width:100%">
 
-        <!-- Main Profile Content -->
-        <div class="col-md-9">
+        
+        <div>
             <div>
                 <div class="card-body">
                     @if (auth()->check())
@@ -18,7 +18,7 @@
                         <h6 class="text-center">{{ auth()->user()->name }}</h6>
                         <p class="text-center">{{ auth()->user()->bio ?? 'Bio tidak tersedia.' }}</p>
 
-                        <!-- Button to open modal -->
+                 
                         <button class="btn btn-primary d-block mx-auto mb-3" data-toggle="modal"
                             data-target="#editProfileModal">Edit Profil</button>
 
@@ -27,14 +27,14 @@
                         @if (isset($posts))
                             <p>Jumlah postingan: {{ $posts->count() }}</p>
 
-                            <!-- Ambil feeds_per_row dari setting -->
+                          
                             @php
-                                $feeds_per_row = auth()->user()->setting->feeds_per_row ?? 3; // Default 3 feeds per row
+                                $feeds_per_row = auth()->user()->setting->feeds_per_row ?? 3; 
                             @endphp
 
                             <div class="row">
                                 @forelse($posts as $post)
-                                    <div class="col-md-{{ 12 / $feeds_per_row }} mb-3"> <!-- Adjust berdasarkan feeds per row -->
+                                    <div class="col-md-{{ 12 / $feeds_per_row }} mb-3"> 
                                         <div class="card">
                                             <div class="card-body">
                                                 @if ($post->media_type === 'image')
@@ -46,7 +46,7 @@
                                                     </video>
                                                 @endif
                                                 <p class="card-text">Caption :{{ $post->caption }}</p>
-                                                 <!-- Tambahkan ini untuk menampilkan jumlah like per post -->
+                                              
                                                  <p class="card-text">Likes: {{ $post->likes_count }}</p>
                                                 <p class="card-text"><small class="text-muted">Di upload
                                                         {{ $post->created_at->format('M d, Y') }}</small></p>

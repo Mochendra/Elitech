@@ -9,25 +9,25 @@ class SettingController extends Controller
 {
     public function index()
     {
-        $settings = auth()->user()->setting; // Mengambil pengaturan user yang sedang login
+        $settings = auth()->user()->setting; 
         return view('settings.index', compact('settings'));
     }
 
     public function update(Request $request)
     {
         $request->validate([
-            'feeds_per_row' => 'required|integer|min:1|max:5', // Batasan 1 hingga 5
+            'feeds_per_row' => 'required|integer|min:1|max:5', 
         ]);
 
         $setting = auth()->user()->setting;
 
-        // Jika pengaturan belum ada, buat pengaturan baru
+     
         if (!$setting) {
             $setting = new Setting();
             $setting->user_id = auth()->id();
         }
 
-        // Perbarui jumlah feed per row
+       
         $setting->feeds_per_row = $request->feeds_per_row;
         $setting->save();
 

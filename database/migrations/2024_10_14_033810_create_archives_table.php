@@ -11,9 +11,9 @@ class CreateArchivesTable extends Migration
     {
         Schema::create('archives', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('post_id')->constrained()->onDelete('cascade'); // Relasi ke postingan
-            $table->timestamps(); // Ini akan membuat created_at dan updated_at
-            $table->text('caption'); // Caption
+            $table->foreignId('post_id')->constrained()->onDelete('cascade'); 
+            $table->timestamps(); 
+            $table->text('caption'); 
         });
     }
 

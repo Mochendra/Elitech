@@ -28,23 +28,11 @@ use App\Http\Controllers\ExportController;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    if (!auth()->check()) {
+        return redirect('/login');
+    }
+    return redirect('/feed');
 });
-
-// Route::get('/login', [AuthController::class, 'showLoginForm'])->name('login');
-// Route::post('/login', [AuthController::class, 'login']);
-// Route::get('/register', [AuthController::class, 'showRegistrationForm'])->name('register');
-// Route::post('/register', [AuthController::class, 'register']);
-
-// Route::middleware('auth')->group(function () {
-//     Route::get('/profile', [ProfileController::class, 'index'])->name('profile.index');
-//     Route::get('/posts/create', [PostController::class, 'create'])->name('posts.create');
-//     Route::post('/posts', [PostController::class, 'store'])->name('posts.store');
-//     Route::get('/settings', [SettingsController::class, 'index'])->name('settings.index');
-//     Route::post('/settings', [SettingsController::class, 'update'])->name('settings.update');
-//     Route::get('/archives', [ArchiveController::class, 'index'])->name('archives.index');
-//     Route::post('/archives/download', [ArchiveController::class, 'download'])->name('archives.download');
-// });
 
 // Authentication Routes
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -71,13 +59,7 @@ Route::middleware(['auth'])->group(function () {
     Route::post('/archives/download-all', [ArchiveController::class, 'downloadAll'])->name('archives.downloadAll');
     Route::get('/export', 'YourController@exportToExcel');
     Route::get('/export-xlsx', [ArchiveController::class, 'exportToXlsx']);
-// Route::get('/export-excel', [YourController::class, 'exportToExcel']);
-// Route::get('/export-archive', [ExportController::class, 'exportArchiveToExcel']);
 });
-
-
-// // Route for the user profile with authentication middleware
-// Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show')->middleware('auth');
 
 
 // Halaman Login
